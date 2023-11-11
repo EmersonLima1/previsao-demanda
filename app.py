@@ -14,12 +14,16 @@ def load_data():
 
 data = load_data()
 
+# Renomear a coluna de feriados
+data.rename(columns={'Feriados': 'holiday'}, inplace=True)
+
 # Exibir dados históricos
 st.subheader("Dados Históricos de Vendas")
 st.write(data)
 
 # Criar modelo Prophet
-model = Prophet(holidays=data[data['Feriados'] == 1], yearly_seasonality=True)
+model = Prophet(holidays=data, yearly_seasonality=True)
+model.add_country_holidays(country_name='BR')  # Adicione feriados brasileiros, se aplicável
 model.fit(data[['Data', 'Vendas']].rename(columns={'Data': 'ds', 'Vendas': 'y'}))
 
 # Prever vendas futuras
