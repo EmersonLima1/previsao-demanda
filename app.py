@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-from prophet import Prophet
+from fbprophet import Prophet
 import matplotlib.pyplot as plt
-from prophet.plot import plot_plotly
+from fbprophet.plot import plot_plotly
 
 st.title("Análise e Previsão de Vendas")
 
@@ -14,17 +14,21 @@ def load_data():
 
 data = load_data()
 
-# Renomear a coluna de feriados
-data.rename(columns={'Feriados': 'holiday'}, inplace=True)
+# Renomear as colunas para o formato exigido pelo Prophet
+data.rename(columns={'Data': 'ds', 'Vendas': 'y'}, inplace=True)
+
+# Carregar dados de feriados
+feriados = pd.read_csv('feriados.csv')
+feriados.rename(columns={'Data': 'ds', 'Feriados': 'holiday'}, inplace=True)
 
 # Exibir dados históricos
 st.subheader("Dados Históricos de Vendas")
 st.write(data)
 
-# Criar modelo Prophet
-model = Prophet(holidays=data, yearly_seasonality=True)
+# Criar modelo Prophet com feriados
+model = Prophet(holidays=feriados, yearly_seasonality=True)
 model.add_country_holidays(country_name='BR')  # Adicione feriados brasileiros, se aplicável
-model.fit(data[['Data', 'Vendas']].rename(columns={'Data': 'ds', 'Vendas': 'y'}))
+model.fit(data)
 
 # Prever vendas futuras
 st.subheader("Previsão de Vendas Futuras")
